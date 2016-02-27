@@ -6645,8 +6645,11 @@ Elm.DigitSummer.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
+   var update = F2(function (action,model) {    var _p0 = action;if (_p0.ctor === "KeyPress") {    return _p0._0;} else {    return model;}});
+   var KeyPress = function (a) {    return {ctor: "KeyPress",_0: a};};
+   var NoOp = {ctor: "NoOp"};
    var view = function (model) {    return $Graphics$Element.show(model);};
-   return _elm.DigitSummer.values = {_op: _op,view: view};
+   return _elm.DigitSummer.values = {_op: _op,view: view,update: update,NoOp: NoOp,KeyPress: KeyPress};
 };
 Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
@@ -6664,7 +6667,8 @@ Elm.Main.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var state = A3($Signal.foldp,F2(function (keyCode,_p0) {    return keyCode;}),0,$Keyboard.presses);
+   var actions = A2($Signal.map,function (keyPress) {    return $DigitSummer.KeyPress(keyPress);},$Keyboard.presses);
+   var state = A3($Signal.foldp,$DigitSummer.update,0,actions);
    var main = A2($Signal.map,$DigitSummer.view,state);
-   return _elm.Main.values = {_op: _op,state: state,main: main};
+   return _elm.Main.values = {_op: _op,state: state,actions: actions,main: main};
 };
