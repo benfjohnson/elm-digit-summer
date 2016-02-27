@@ -1972,6 +1972,61 @@ Elm.List.make = function (_elm) {
                              ,sortBy: sortBy
                              ,sortWith: sortWith};
 };
+Elm.Native.Char = {};
+Elm.Native.Char.make = function(localRuntime) {
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.Char = localRuntime.Native.Char || {};
+	if (localRuntime.Native.Char.values)
+	{
+		return localRuntime.Native.Char.values;
+	}
+
+	var Utils = Elm.Native.Utils.make(localRuntime);
+
+	return localRuntime.Native.Char.values = {
+		fromCode: function(c) { return Utils.chr(String.fromCharCode(c)); },
+		toCode: function(c) { return c.charCodeAt(0); },
+		toUpper: function(c) { return Utils.chr(c.toUpperCase()); },
+		toLower: function(c) { return Utils.chr(c.toLowerCase()); },
+		toLocaleUpper: function(c) { return Utils.chr(c.toLocaleUpperCase()); },
+		toLocaleLower: function(c) { return Utils.chr(c.toLocaleLowerCase()); }
+	};
+};
+
+Elm.Char = Elm.Char || {};
+Elm.Char.make = function (_elm) {
+   "use strict";
+   _elm.Char = _elm.Char || {};
+   if (_elm.Char.values) return _elm.Char.values;
+   var _U = Elm.Native.Utils.make(_elm),$Basics = Elm.Basics.make(_elm),$Native$Char = Elm.Native.Char.make(_elm);
+   var _op = {};
+   var fromCode = $Native$Char.fromCode;
+   var toCode = $Native$Char.toCode;
+   var toLocaleLower = $Native$Char.toLocaleLower;
+   var toLocaleUpper = $Native$Char.toLocaleUpper;
+   var toLower = $Native$Char.toLower;
+   var toUpper = $Native$Char.toUpper;
+   var isBetween = F3(function (low,high,$char) {    var code = toCode($char);return _U.cmp(code,toCode(low)) > -1 && _U.cmp(code,toCode(high)) < 1;});
+   var isUpper = A2(isBetween,_U.chr("A"),_U.chr("Z"));
+   var isLower = A2(isBetween,_U.chr("a"),_U.chr("z"));
+   var isDigit = A2(isBetween,_U.chr("0"),_U.chr("9"));
+   var isOctDigit = A2(isBetween,_U.chr("0"),_U.chr("7"));
+   var isHexDigit = function ($char) {
+      return isDigit($char) || (A3(isBetween,_U.chr("a"),_U.chr("f"),$char) || A3(isBetween,_U.chr("A"),_U.chr("F"),$char));
+   };
+   return _elm.Char.values = {_op: _op
+                             ,isUpper: isUpper
+                             ,isLower: isLower
+                             ,isDigit: isDigit
+                             ,isOctDigit: isOctDigit
+                             ,isHexDigit: isHexDigit
+                             ,toUpper: toUpper
+                             ,toLower: toLower
+                             ,toLocaleUpper: toLocaleUpper
+                             ,toLocaleLower: toLocaleLower
+                             ,toCode: toCode
+                             ,fromCode: fromCode};
+};
 Elm.Native.Color = {};
 Elm.Native.Color.make = function(localRuntime) {
 	localRuntime.Native = localRuntime.Native || {};
@@ -5421,6 +5476,1160 @@ Elm.Signal.make = function (_elm) {
                                ,forwardTo: forwardTo
                                ,Mailbox: Mailbox};
 };
+Elm.Native.String = {};
+
+Elm.Native.String.make = function(localRuntime) {
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.String = localRuntime.Native.String || {};
+	if (localRuntime.Native.String.values)
+	{
+		return localRuntime.Native.String.values;
+	}
+	if ('values' in Elm.Native.String)
+	{
+		return localRuntime.Native.String.values = Elm.Native.String.values;
+	}
+
+
+	var Char = Elm.Char.make(localRuntime);
+	var List = Elm.Native.List.make(localRuntime);
+	var Maybe = Elm.Maybe.make(localRuntime);
+	var Result = Elm.Result.make(localRuntime);
+	var Utils = Elm.Native.Utils.make(localRuntime);
+
+	function isEmpty(str)
+	{
+		return str.length === 0;
+	}
+	function cons(chr, str)
+	{
+		return chr + str;
+	}
+	function uncons(str)
+	{
+		var hd = str[0];
+		if (hd)
+		{
+			return Maybe.Just(Utils.Tuple2(Utils.chr(hd), str.slice(1)));
+		}
+		return Maybe.Nothing;
+	}
+	function append(a, b)
+	{
+		return a + b;
+	}
+	function concat(strs)
+	{
+		return List.toArray(strs).join('');
+	}
+	function length(str)
+	{
+		return str.length;
+	}
+	function map(f, str)
+	{
+		var out = str.split('');
+		for (var i = out.length; i--; )
+		{
+			out[i] = f(Utils.chr(out[i]));
+		}
+		return out.join('');
+	}
+	function filter(pred, str)
+	{
+		return str.split('').map(Utils.chr).filter(pred).join('');
+	}
+	function reverse(str)
+	{
+		return str.split('').reverse().join('');
+	}
+	function foldl(f, b, str)
+	{
+		var len = str.length;
+		for (var i = 0; i < len; ++i)
+		{
+			b = A2(f, Utils.chr(str[i]), b);
+		}
+		return b;
+	}
+	function foldr(f, b, str)
+	{
+		for (var i = str.length; i--; )
+		{
+			b = A2(f, Utils.chr(str[i]), b);
+		}
+		return b;
+	}
+	function split(sep, str)
+	{
+		return List.fromArray(str.split(sep));
+	}
+	function join(sep, strs)
+	{
+		return List.toArray(strs).join(sep);
+	}
+	function repeat(n, str)
+	{
+		var result = '';
+		while (n > 0)
+		{
+			if (n & 1)
+			{
+				result += str;
+			}
+			n >>= 1, str += str;
+		}
+		return result;
+	}
+	function slice(start, end, str)
+	{
+		return str.slice(start, end);
+	}
+	function left(n, str)
+	{
+		return n < 1 ? '' : str.slice(0, n);
+	}
+	function right(n, str)
+	{
+		return n < 1 ? '' : str.slice(-n);
+	}
+	function dropLeft(n, str)
+	{
+		return n < 1 ? str : str.slice(n);
+	}
+	function dropRight(n, str)
+	{
+		return n < 1 ? str : str.slice(0, -n);
+	}
+	function pad(n, chr, str)
+	{
+		var half = (n - str.length) / 2;
+		return repeat(Math.ceil(half), chr) + str + repeat(half | 0, chr);
+	}
+	function padRight(n, chr, str)
+	{
+		return str + repeat(n - str.length, chr);
+	}
+	function padLeft(n, chr, str)
+	{
+		return repeat(n - str.length, chr) + str;
+	}
+
+	function trim(str)
+	{
+		return str.trim();
+	}
+	function trimLeft(str)
+	{
+		return str.replace(/^\s+/, '');
+	}
+	function trimRight(str)
+	{
+		return str.replace(/\s+$/, '');
+	}
+
+	function words(str)
+	{
+		return List.fromArray(str.trim().split(/\s+/g));
+	}
+	function lines(str)
+	{
+		return List.fromArray(str.split(/\r\n|\r|\n/g));
+	}
+
+	function toUpper(str)
+	{
+		return str.toUpperCase();
+	}
+	function toLower(str)
+	{
+		return str.toLowerCase();
+	}
+
+	function any(pred, str)
+	{
+		for (var i = str.length; i--; )
+		{
+			if (pred(Utils.chr(str[i])))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	function all(pred, str)
+	{
+		for (var i = str.length; i--; )
+		{
+			if (!pred(Utils.chr(str[i])))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function contains(sub, str)
+	{
+		return str.indexOf(sub) > -1;
+	}
+	function startsWith(sub, str)
+	{
+		return str.indexOf(sub) === 0;
+	}
+	function endsWith(sub, str)
+	{
+		return str.length >= sub.length &&
+			str.lastIndexOf(sub) === str.length - sub.length;
+	}
+	function indexes(sub, str)
+	{
+		var subLen = sub.length;
+		var i = 0;
+		var is = [];
+		while ((i = str.indexOf(sub, i)) > -1)
+		{
+			is.push(i);
+			i = i + subLen;
+		}
+		return List.fromArray(is);
+	}
+
+	function toInt(s)
+	{
+		var len = s.length;
+		if (len === 0)
+		{
+			return Result.Err("could not convert string '" + s + "' to an Int" );
+		}
+		var start = 0;
+		if (s[0] === '-')
+		{
+			if (len === 1)
+			{
+				return Result.Err("could not convert string '" + s + "' to an Int" );
+			}
+			start = 1;
+		}
+		for (var i = start; i < len; ++i)
+		{
+			if (!Char.isDigit(s[i]))
+			{
+				return Result.Err("could not convert string '" + s + "' to an Int" );
+			}
+		}
+		return Result.Ok(parseInt(s, 10));
+	}
+
+	function toFloat(s)
+	{
+		var len = s.length;
+		if (len === 0)
+		{
+			return Result.Err("could not convert string '" + s + "' to a Float" );
+		}
+		var start = 0;
+		if (s[0] === '-')
+		{
+			if (len === 1)
+			{
+				return Result.Err("could not convert string '" + s + "' to a Float" );
+			}
+			start = 1;
+		}
+		var dotCount = 0;
+		for (var i = start; i < len; ++i)
+		{
+			if (Char.isDigit(s[i]))
+			{
+				continue;
+			}
+			if (s[i] === '.')
+			{
+				dotCount += 1;
+				if (dotCount <= 1)
+				{
+					continue;
+				}
+			}
+			return Result.Err("could not convert string '" + s + "' to a Float" );
+		}
+		return Result.Ok(parseFloat(s));
+	}
+
+	function toList(str)
+	{
+		return List.fromArray(str.split('').map(Utils.chr));
+	}
+	function fromList(chars)
+	{
+		return List.toArray(chars).join('');
+	}
+
+	return Elm.Native.String.values = {
+		isEmpty: isEmpty,
+		cons: F2(cons),
+		uncons: uncons,
+		append: F2(append),
+		concat: concat,
+		length: length,
+		map: F2(map),
+		filter: F2(filter),
+		reverse: reverse,
+		foldl: F3(foldl),
+		foldr: F3(foldr),
+
+		split: F2(split),
+		join: F2(join),
+		repeat: F2(repeat),
+
+		slice: F3(slice),
+		left: F2(left),
+		right: F2(right),
+		dropLeft: F2(dropLeft),
+		dropRight: F2(dropRight),
+
+		pad: F3(pad),
+		padLeft: F3(padLeft),
+		padRight: F3(padRight),
+
+		trim: trim,
+		trimLeft: trimLeft,
+		trimRight: trimRight,
+
+		words: words,
+		lines: lines,
+
+		toUpper: toUpper,
+		toLower: toLower,
+
+		any: F2(any),
+		all: F2(all),
+
+		contains: F2(contains),
+		startsWith: F2(startsWith),
+		endsWith: F2(endsWith),
+		indexes: F2(indexes),
+
+		toInt: toInt,
+		toFloat: toFloat,
+		toList: toList,
+		fromList: fromList
+	};
+};
+
+Elm.String = Elm.String || {};
+Elm.String.make = function (_elm) {
+   "use strict";
+   _elm.String = _elm.String || {};
+   if (_elm.String.values) return _elm.String.values;
+   var _U = Elm.Native.Utils.make(_elm),$Maybe = Elm.Maybe.make(_elm),$Native$String = Elm.Native.String.make(_elm),$Result = Elm.Result.make(_elm);
+   var _op = {};
+   var fromList = $Native$String.fromList;
+   var toList = $Native$String.toList;
+   var toFloat = $Native$String.toFloat;
+   var toInt = $Native$String.toInt;
+   var indices = $Native$String.indexes;
+   var indexes = $Native$String.indexes;
+   var endsWith = $Native$String.endsWith;
+   var startsWith = $Native$String.startsWith;
+   var contains = $Native$String.contains;
+   var all = $Native$String.all;
+   var any = $Native$String.any;
+   var toLower = $Native$String.toLower;
+   var toUpper = $Native$String.toUpper;
+   var lines = $Native$String.lines;
+   var words = $Native$String.words;
+   var trimRight = $Native$String.trimRight;
+   var trimLeft = $Native$String.trimLeft;
+   var trim = $Native$String.trim;
+   var padRight = $Native$String.padRight;
+   var padLeft = $Native$String.padLeft;
+   var pad = $Native$String.pad;
+   var dropRight = $Native$String.dropRight;
+   var dropLeft = $Native$String.dropLeft;
+   var right = $Native$String.right;
+   var left = $Native$String.left;
+   var slice = $Native$String.slice;
+   var repeat = $Native$String.repeat;
+   var join = $Native$String.join;
+   var split = $Native$String.split;
+   var foldr = $Native$String.foldr;
+   var foldl = $Native$String.foldl;
+   var reverse = $Native$String.reverse;
+   var filter = $Native$String.filter;
+   var map = $Native$String.map;
+   var length = $Native$String.length;
+   var concat = $Native$String.concat;
+   var append = $Native$String.append;
+   var uncons = $Native$String.uncons;
+   var cons = $Native$String.cons;
+   var fromChar = function ($char) {    return A2(cons,$char,"");};
+   var isEmpty = $Native$String.isEmpty;
+   return _elm.String.values = {_op: _op
+                               ,isEmpty: isEmpty
+                               ,length: length
+                               ,reverse: reverse
+                               ,repeat: repeat
+                               ,cons: cons
+                               ,uncons: uncons
+                               ,fromChar: fromChar
+                               ,append: append
+                               ,concat: concat
+                               ,split: split
+                               ,join: join
+                               ,words: words
+                               ,lines: lines
+                               ,slice: slice
+                               ,left: left
+                               ,right: right
+                               ,dropLeft: dropLeft
+                               ,dropRight: dropRight
+                               ,contains: contains
+                               ,startsWith: startsWith
+                               ,endsWith: endsWith
+                               ,indexes: indexes
+                               ,indices: indices
+                               ,toInt: toInt
+                               ,toFloat: toFloat
+                               ,toList: toList
+                               ,fromList: fromList
+                               ,toUpper: toUpper
+                               ,toLower: toLower
+                               ,pad: pad
+                               ,padLeft: padLeft
+                               ,padRight: padRight
+                               ,trim: trim
+                               ,trimLeft: trimLeft
+                               ,trimRight: trimRight
+                               ,map: map
+                               ,filter: filter
+                               ,foldl: foldl
+                               ,foldr: foldr
+                               ,any: any
+                               ,all: all};
+};
+Elm.Dict = Elm.Dict || {};
+Elm.Dict.make = function (_elm) {
+   "use strict";
+   _elm.Dict = _elm.Dict || {};
+   if (_elm.Dict.values) return _elm.Dict.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Native$Debug = Elm.Native.Debug.make(_elm),
+   $String = Elm.String.make(_elm);
+   var _op = {};
+   var foldr = F3(function (f,acc,t) {
+      foldr: while (true) {
+         var _p0 = t;
+         if (_p0.ctor === "RBEmpty_elm_builtin") {
+               return acc;
+            } else {
+               var _v1 = f,_v2 = A3(f,_p0._1,_p0._2,A3(foldr,f,acc,_p0._4)),_v3 = _p0._3;
+               f = _v1;
+               acc = _v2;
+               t = _v3;
+               continue foldr;
+            }
+      }
+   });
+   var keys = function (dict) {    return A3(foldr,F3(function (key,value,keyList) {    return A2($List._op["::"],key,keyList);}),_U.list([]),dict);};
+   var values = function (dict) {    return A3(foldr,F3(function (key,value,valueList) {    return A2($List._op["::"],value,valueList);}),_U.list([]),dict);};
+   var toList = function (dict) {
+      return A3(foldr,F3(function (key,value,list) {    return A2($List._op["::"],{ctor: "_Tuple2",_0: key,_1: value},list);}),_U.list([]),dict);
+   };
+   var foldl = F3(function (f,acc,dict) {
+      foldl: while (true) {
+         var _p1 = dict;
+         if (_p1.ctor === "RBEmpty_elm_builtin") {
+               return acc;
+            } else {
+               var _v5 = f,_v6 = A3(f,_p1._1,_p1._2,A3(foldl,f,acc,_p1._3)),_v7 = _p1._4;
+               f = _v5;
+               acc = _v6;
+               dict = _v7;
+               continue foldl;
+            }
+      }
+   });
+   var reportRemBug = F4(function (msg,c,lgot,rgot) {
+      return $Native$Debug.crash($String.concat(_U.list(["Internal red-black tree invariant violated, expected "
+                                                        ,msg
+                                                        ," and got "
+                                                        ,$Basics.toString(c)
+                                                        ,"/"
+                                                        ,lgot
+                                                        ,"/"
+                                                        ,rgot
+                                                        ,"\nPlease report this bug to <https://github.com/elm-lang/core/issues>"])));
+   });
+   var isBBlack = function (dict) {
+      var _p2 = dict;
+      _v8_2: do {
+         if (_p2.ctor === "RBNode_elm_builtin") {
+               if (_p2._0.ctor === "BBlack") {
+                     return true;
+                  } else {
+                     break _v8_2;
+                  }
+            } else {
+               if (_p2._0.ctor === "LBBlack") {
+                     return true;
+                  } else {
+                     break _v8_2;
+                  }
+            }
+      } while (false);
+      return false;
+   };
+   var Same = {ctor: "Same"};
+   var Remove = {ctor: "Remove"};
+   var Insert = {ctor: "Insert"};
+   var sizeHelp = F2(function (n,dict) {
+      sizeHelp: while (true) {
+         var _p3 = dict;
+         if (_p3.ctor === "RBEmpty_elm_builtin") {
+               return n;
+            } else {
+               var _v10 = A2(sizeHelp,n + 1,_p3._4),_v11 = _p3._3;
+               n = _v10;
+               dict = _v11;
+               continue sizeHelp;
+            }
+      }
+   });
+   var size = function (dict) {    return A2(sizeHelp,0,dict);};
+   var get = F2(function (targetKey,dict) {
+      get: while (true) {
+         var _p4 = dict;
+         if (_p4.ctor === "RBEmpty_elm_builtin") {
+               return $Maybe.Nothing;
+            } else {
+               var _p5 = A2($Basics.compare,targetKey,_p4._1);
+               switch (_p5.ctor)
+               {case "LT": var _v14 = targetKey,_v15 = _p4._3;
+                    targetKey = _v14;
+                    dict = _v15;
+                    continue get;
+                  case "EQ": return $Maybe.Just(_p4._2);
+                  default: var _v16 = targetKey,_v17 = _p4._4;
+                    targetKey = _v16;
+                    dict = _v17;
+                    continue get;}
+            }
+      }
+   });
+   var member = F2(function (key,dict) {    var _p6 = A2(get,key,dict);if (_p6.ctor === "Just") {    return true;} else {    return false;}});
+   var maxWithDefault = F3(function (k,v,r) {
+      maxWithDefault: while (true) {
+         var _p7 = r;
+         if (_p7.ctor === "RBEmpty_elm_builtin") {
+               return {ctor: "_Tuple2",_0: k,_1: v};
+            } else {
+               var _v20 = _p7._1,_v21 = _p7._2,_v22 = _p7._4;
+               k = _v20;
+               v = _v21;
+               r = _v22;
+               continue maxWithDefault;
+            }
+      }
+   });
+   var RBEmpty_elm_builtin = function (a) {    return {ctor: "RBEmpty_elm_builtin",_0: a};};
+   var RBNode_elm_builtin = F5(function (a,b,c,d,e) {    return {ctor: "RBNode_elm_builtin",_0: a,_1: b,_2: c,_3: d,_4: e};});
+   var LBBlack = {ctor: "LBBlack"};
+   var LBlack = {ctor: "LBlack"};
+   var empty = RBEmpty_elm_builtin(LBlack);
+   var isEmpty = function (dict) {    return _U.eq(dict,empty);};
+   var map = F2(function (f,dict) {
+      var _p8 = dict;
+      if (_p8.ctor === "RBEmpty_elm_builtin") {
+            return RBEmpty_elm_builtin(LBlack);
+         } else {
+            var _p9 = _p8._1;
+            return A5(RBNode_elm_builtin,_p8._0,_p9,A2(f,_p9,_p8._2),A2(map,f,_p8._3),A2(map,f,_p8._4));
+         }
+   });
+   var NBlack = {ctor: "NBlack"};
+   var BBlack = {ctor: "BBlack"};
+   var Black = {ctor: "Black"};
+   var ensureBlackRoot = function (dict) {
+      var _p10 = dict;
+      if (_p10.ctor === "RBNode_elm_builtin" && _p10._0.ctor === "Red") {
+            return A5(RBNode_elm_builtin,Black,_p10._1,_p10._2,_p10._3,_p10._4);
+         } else {
+            return dict;
+         }
+   };
+   var blackish = function (t) {
+      var _p11 = t;
+      if (_p11.ctor === "RBNode_elm_builtin") {
+            var _p12 = _p11._0;
+            return _U.eq(_p12,Black) || _U.eq(_p12,BBlack);
+         } else {
+            return true;
+         }
+   };
+   var blacken = function (t) {
+      var _p13 = t;
+      if (_p13.ctor === "RBEmpty_elm_builtin") {
+            return RBEmpty_elm_builtin(LBlack);
+         } else {
+            return A5(RBNode_elm_builtin,Black,_p13._1,_p13._2,_p13._3,_p13._4);
+         }
+   };
+   var Red = {ctor: "Red"};
+   var moreBlack = function (color) {
+      var _p14 = color;
+      switch (_p14.ctor)
+      {case "Black": return BBlack;
+         case "Red": return Black;
+         case "NBlack": return Red;
+         default: return $Native$Debug.crash("Can\'t make a double black node more black!");}
+   };
+   var lessBlack = function (color) {
+      var _p15 = color;
+      switch (_p15.ctor)
+      {case "BBlack": return Black;
+         case "Black": return Red;
+         case "Red": return NBlack;
+         default: return $Native$Debug.crash("Can\'t make a negative black node less black!");}
+   };
+   var lessBlackTree = function (dict) {
+      var _p16 = dict;
+      if (_p16.ctor === "RBNode_elm_builtin") {
+            return A5(RBNode_elm_builtin,lessBlack(_p16._0),_p16._1,_p16._2,_p16._3,_p16._4);
+         } else {
+            return RBEmpty_elm_builtin(LBlack);
+         }
+   };
+   var balancedTree = function (col) {
+      return function (xk) {
+         return function (xv) {
+            return function (yk) {
+               return function (yv) {
+                  return function (zk) {
+                     return function (zv) {
+                        return function (a) {
+                           return function (b) {
+                              return function (c) {
+                                 return function (d) {
+                                    return A5(RBNode_elm_builtin,
+                                    lessBlack(col),
+                                    yk,
+                                    yv,
+                                    A5(RBNode_elm_builtin,Black,xk,xv,a,b),
+                                    A5(RBNode_elm_builtin,Black,zk,zv,c,d));
+                                 };
+                              };
+                           };
+                        };
+                     };
+                  };
+               };
+            };
+         };
+      };
+   };
+   var redden = function (t) {
+      var _p17 = t;
+      if (_p17.ctor === "RBEmpty_elm_builtin") {
+            return $Native$Debug.crash("can\'t make a Leaf red");
+         } else {
+            return A5(RBNode_elm_builtin,Red,_p17._1,_p17._2,_p17._3,_p17._4);
+         }
+   };
+   var balanceHelp = function (tree) {
+      var _p18 = tree;
+      _v31_6: do {
+         _v31_5: do {
+            _v31_4: do {
+               _v31_3: do {
+                  _v31_2: do {
+                     _v31_1: do {
+                        _v31_0: do {
+                           if (_p18.ctor === "RBNode_elm_builtin") {
+                                 if (_p18._3.ctor === "RBNode_elm_builtin") {
+                                       if (_p18._4.ctor === "RBNode_elm_builtin") {
+                                             switch (_p18._3._0.ctor)
+                                             {case "Red": switch (_p18._4._0.ctor)
+                                                  {case "Red": if (_p18._3._3.ctor === "RBNode_elm_builtin" && _p18._3._3._0.ctor === "Red") {
+                                                             break _v31_0;
+                                                          } else {
+                                                             if (_p18._3._4.ctor === "RBNode_elm_builtin" && _p18._3._4._0.ctor === "Red") {
+                                                                   break _v31_1;
+                                                                } else {
+                                                                   if (_p18._4._3.ctor === "RBNode_elm_builtin" && _p18._4._3._0.ctor === "Red") {
+                                                                         break _v31_2;
+                                                                      } else {
+                                                                         if (_p18._4._4.ctor === "RBNode_elm_builtin" && _p18._4._4._0.ctor === "Red") {
+                                                                               break _v31_3;
+                                                                            } else {
+                                                                               break _v31_6;
+                                                                            }
+                                                                      }
+                                                                }
+                                                          }
+                                                     case "NBlack": if (_p18._3._3.ctor === "RBNode_elm_builtin" && _p18._3._3._0.ctor === "Red") {
+                                                             break _v31_0;
+                                                          } else {
+                                                             if (_p18._3._4.ctor === "RBNode_elm_builtin" && _p18._3._4._0.ctor === "Red") {
+                                                                   break _v31_1;
+                                                                } else {
+                                                                   if (_p18._0.ctor === "BBlack" && _p18._4._3.ctor === "RBNode_elm_builtin" && _p18._4._3._0.ctor === "Black" && _p18._4._4.ctor === "RBNode_elm_builtin" && _p18._4._4._0.ctor === "Black")
+                                                                   {
+                                                                         break _v31_4;
+                                                                      } else {
+                                                                         break _v31_6;
+                                                                      }
+                                                                }
+                                                          }
+                                                     default: if (_p18._3._3.ctor === "RBNode_elm_builtin" && _p18._3._3._0.ctor === "Red") {
+                                                             break _v31_0;
+                                                          } else {
+                                                             if (_p18._3._4.ctor === "RBNode_elm_builtin" && _p18._3._4._0.ctor === "Red") {
+                                                                   break _v31_1;
+                                                                } else {
+                                                                   break _v31_6;
+                                                                }
+                                                          }}
+                                                case "NBlack": switch (_p18._4._0.ctor)
+                                                  {case "Red": if (_p18._4._3.ctor === "RBNode_elm_builtin" && _p18._4._3._0.ctor === "Red") {
+                                                             break _v31_2;
+                                                          } else {
+                                                             if (_p18._4._4.ctor === "RBNode_elm_builtin" && _p18._4._4._0.ctor === "Red") {
+                                                                   break _v31_3;
+                                                                } else {
+                                                                   if (_p18._0.ctor === "BBlack" && _p18._3._3.ctor === "RBNode_elm_builtin" && _p18._3._3._0.ctor === "Black" && _p18._3._4.ctor === "RBNode_elm_builtin" && _p18._3._4._0.ctor === "Black")
+                                                                   {
+                                                                         break _v31_5;
+                                                                      } else {
+                                                                         break _v31_6;
+                                                                      }
+                                                                }
+                                                          }
+                                                     case "NBlack": if (_p18._0.ctor === "BBlack") {
+                                                             if (_p18._4._3.ctor === "RBNode_elm_builtin" && _p18._4._3._0.ctor === "Black" && _p18._4._4.ctor === "RBNode_elm_builtin" && _p18._4._4._0.ctor === "Black")
+                                                             {
+                                                                   break _v31_4;
+                                                                } else {
+                                                                   if (_p18._3._3.ctor === "RBNode_elm_builtin" && _p18._3._3._0.ctor === "Black" && _p18._3._4.ctor === "RBNode_elm_builtin" && _p18._3._4._0.ctor === "Black")
+                                                                   {
+                                                                         break _v31_5;
+                                                                      } else {
+                                                                         break _v31_6;
+                                                                      }
+                                                                }
+                                                          } else {
+                                                             break _v31_6;
+                                                          }
+                                                     default:
+                                                     if (_p18._0.ctor === "BBlack" && _p18._3._3.ctor === "RBNode_elm_builtin" && _p18._3._3._0.ctor === "Black" && _p18._3._4.ctor === "RBNode_elm_builtin" && _p18._3._4._0.ctor === "Black")
+                                                       {
+                                                             break _v31_5;
+                                                          } else {
+                                                             break _v31_6;
+                                                          }}
+                                                default: switch (_p18._4._0.ctor)
+                                                  {case "Red": if (_p18._4._3.ctor === "RBNode_elm_builtin" && _p18._4._3._0.ctor === "Red") {
+                                                             break _v31_2;
+                                                          } else {
+                                                             if (_p18._4._4.ctor === "RBNode_elm_builtin" && _p18._4._4._0.ctor === "Red") {
+                                                                   break _v31_3;
+                                                                } else {
+                                                                   break _v31_6;
+                                                                }
+                                                          }
+                                                     case "NBlack":
+                                                     if (_p18._0.ctor === "BBlack" && _p18._4._3.ctor === "RBNode_elm_builtin" && _p18._4._3._0.ctor === "Black" && _p18._4._4.ctor === "RBNode_elm_builtin" && _p18._4._4._0.ctor === "Black")
+                                                       {
+                                                             break _v31_4;
+                                                          } else {
+                                                             break _v31_6;
+                                                          }
+                                                     default: break _v31_6;}}
+                                          } else {
+                                             switch (_p18._3._0.ctor)
+                                             {case "Red": if (_p18._3._3.ctor === "RBNode_elm_builtin" && _p18._3._3._0.ctor === "Red") {
+                                                        break _v31_0;
+                                                     } else {
+                                                        if (_p18._3._4.ctor === "RBNode_elm_builtin" && _p18._3._4._0.ctor === "Red") {
+                                                              break _v31_1;
+                                                           } else {
+                                                              break _v31_6;
+                                                           }
+                                                     }
+                                                case "NBlack":
+                                                if (_p18._0.ctor === "BBlack" && _p18._3._3.ctor === "RBNode_elm_builtin" && _p18._3._3._0.ctor === "Black" && _p18._3._4.ctor === "RBNode_elm_builtin" && _p18._3._4._0.ctor === "Black")
+                                                  {
+                                                        break _v31_5;
+                                                     } else {
+                                                        break _v31_6;
+                                                     }
+                                                default: break _v31_6;}
+                                          }
+                                    } else {
+                                       if (_p18._4.ctor === "RBNode_elm_builtin") {
+                                             switch (_p18._4._0.ctor)
+                                             {case "Red": if (_p18._4._3.ctor === "RBNode_elm_builtin" && _p18._4._3._0.ctor === "Red") {
+                                                        break _v31_2;
+                                                     } else {
+                                                        if (_p18._4._4.ctor === "RBNode_elm_builtin" && _p18._4._4._0.ctor === "Red") {
+                                                              break _v31_3;
+                                                           } else {
+                                                              break _v31_6;
+                                                           }
+                                                     }
+                                                case "NBlack":
+                                                if (_p18._0.ctor === "BBlack" && _p18._4._3.ctor === "RBNode_elm_builtin" && _p18._4._3._0.ctor === "Black" && _p18._4._4.ctor === "RBNode_elm_builtin" && _p18._4._4._0.ctor === "Black")
+                                                  {
+                                                        break _v31_4;
+                                                     } else {
+                                                        break _v31_6;
+                                                     }
+                                                default: break _v31_6;}
+                                          } else {
+                                             break _v31_6;
+                                          }
+                                    }
+                              } else {
+                                 break _v31_6;
+                              }
+                        } while (false);
+                        return balancedTree(_p18._0)(_p18._3._3._1)(_p18._3._3._2)(_p18._3._1)(_p18._3._2)(_p18._1)(_p18._2)(_p18._3._3._3)(_p18._3._3._4)(_p18._3._4)(_p18._4);
+                     } while (false);
+                     return balancedTree(_p18._0)(_p18._3._1)(_p18._3._2)(_p18._3._4._1)(_p18._3._4._2)(_p18._1)(_p18._2)(_p18._3._3)(_p18._3._4._3)(_p18._3._4._4)(_p18._4);
+                  } while (false);
+                  return balancedTree(_p18._0)(_p18._1)(_p18._2)(_p18._4._3._1)(_p18._4._3._2)(_p18._4._1)(_p18._4._2)(_p18._3)(_p18._4._3._3)(_p18._4._3._4)(_p18._4._4);
+               } while (false);
+               return balancedTree(_p18._0)(_p18._1)(_p18._2)(_p18._4._1)(_p18._4._2)(_p18._4._4._1)(_p18._4._4._2)(_p18._3)(_p18._4._3)(_p18._4._4._3)(_p18._4._4._4);
+            } while (false);
+            return A5(RBNode_elm_builtin,
+            Black,
+            _p18._4._3._1,
+            _p18._4._3._2,
+            A5(RBNode_elm_builtin,Black,_p18._1,_p18._2,_p18._3,_p18._4._3._3),
+            A5(balance,Black,_p18._4._1,_p18._4._2,_p18._4._3._4,redden(_p18._4._4)));
+         } while (false);
+         return A5(RBNode_elm_builtin,
+         Black,
+         _p18._3._4._1,
+         _p18._3._4._2,
+         A5(balance,Black,_p18._3._1,_p18._3._2,redden(_p18._3._3),_p18._3._4._3),
+         A5(RBNode_elm_builtin,Black,_p18._1,_p18._2,_p18._3._4._4,_p18._4));
+      } while (false);
+      return tree;
+   };
+   var balance = F5(function (c,k,v,l,r) {    var tree = A5(RBNode_elm_builtin,c,k,v,l,r);return blackish(tree) ? balanceHelp(tree) : tree;});
+   var bubble = F5(function (c,k,v,l,r) {
+      return isBBlack(l) || isBBlack(r) ? A5(balance,moreBlack(c),k,v,lessBlackTree(l),lessBlackTree(r)) : A5(RBNode_elm_builtin,c,k,v,l,r);
+   });
+   var removeMax = F5(function (c,k,v,l,r) {
+      var _p19 = r;
+      if (_p19.ctor === "RBEmpty_elm_builtin") {
+            return A3(rem,c,l,r);
+         } else {
+            return A5(bubble,c,k,v,l,A5(removeMax,_p19._0,_p19._1,_p19._2,_p19._3,_p19._4));
+         }
+   });
+   var rem = F3(function (c,l,r) {
+      var _p20 = {ctor: "_Tuple2",_0: l,_1: r};
+      if (_p20._0.ctor === "RBEmpty_elm_builtin") {
+            if (_p20._1.ctor === "RBEmpty_elm_builtin") {
+                  var _p21 = c;
+                  switch (_p21.ctor)
+                  {case "Red": return RBEmpty_elm_builtin(LBlack);
+                     case "Black": return RBEmpty_elm_builtin(LBBlack);
+                     default: return $Native$Debug.crash("cannot have bblack or nblack nodes at this point");}
+               } else {
+                  var _p24 = _p20._1._0;
+                  var _p23 = _p20._0._0;
+                  var _p22 = {ctor: "_Tuple3",_0: c,_1: _p23,_2: _p24};
+                  if (_p22.ctor === "_Tuple3" && _p22._0.ctor === "Black" && _p22._1.ctor === "LBlack" && _p22._2.ctor === "Red") {
+                        return A5(RBNode_elm_builtin,Black,_p20._1._1,_p20._1._2,_p20._1._3,_p20._1._4);
+                     } else {
+                        return A4(reportRemBug,"Black/LBlack/Red",c,$Basics.toString(_p23),$Basics.toString(_p24));
+                     }
+               }
+         } else {
+            if (_p20._1.ctor === "RBEmpty_elm_builtin") {
+                  var _p27 = _p20._1._0;
+                  var _p26 = _p20._0._0;
+                  var _p25 = {ctor: "_Tuple3",_0: c,_1: _p26,_2: _p27};
+                  if (_p25.ctor === "_Tuple3" && _p25._0.ctor === "Black" && _p25._1.ctor === "Red" && _p25._2.ctor === "LBlack") {
+                        return A5(RBNode_elm_builtin,Black,_p20._0._1,_p20._0._2,_p20._0._3,_p20._0._4);
+                     } else {
+                        return A4(reportRemBug,"Black/Red/LBlack",c,$Basics.toString(_p26),$Basics.toString(_p27));
+                     }
+               } else {
+                  var _p31 = _p20._0._2;
+                  var _p30 = _p20._0._4;
+                  var _p29 = _p20._0._1;
+                  var l$ = A5(removeMax,_p20._0._0,_p29,_p31,_p20._0._3,_p30);
+                  var _p28 = A3(maxWithDefault,_p29,_p31,_p30);
+                  var k = _p28._0;
+                  var v = _p28._1;
+                  return A5(bubble,c,k,v,l$,r);
+               }
+         }
+   });
+   var update = F3(function (k,alter,dict) {
+      var up = function (dict) {
+         var _p32 = dict;
+         if (_p32.ctor === "RBEmpty_elm_builtin") {
+               var _p33 = alter($Maybe.Nothing);
+               if (_p33.ctor === "Nothing") {
+                     return {ctor: "_Tuple2",_0: Same,_1: empty};
+                  } else {
+                     return {ctor: "_Tuple2",_0: Insert,_1: A5(RBNode_elm_builtin,Red,k,_p33._0,empty,empty)};
+                  }
+            } else {
+               var _p44 = _p32._2;
+               var _p43 = _p32._4;
+               var _p42 = _p32._3;
+               var _p41 = _p32._1;
+               var _p40 = _p32._0;
+               var _p34 = A2($Basics.compare,k,_p41);
+               switch (_p34.ctor)
+               {case "EQ": var _p35 = alter($Maybe.Just(_p44));
+                    if (_p35.ctor === "Nothing") {
+                          return {ctor: "_Tuple2",_0: Remove,_1: A3(rem,_p40,_p42,_p43)};
+                       } else {
+                          return {ctor: "_Tuple2",_0: Same,_1: A5(RBNode_elm_builtin,_p40,_p41,_p35._0,_p42,_p43)};
+                       }
+                  case "LT": var _p36 = up(_p42);
+                    var flag = _p36._0;
+                    var newLeft = _p36._1;
+                    var _p37 = flag;
+                    switch (_p37.ctor)
+                    {case "Same": return {ctor: "_Tuple2",_0: Same,_1: A5(RBNode_elm_builtin,_p40,_p41,_p44,newLeft,_p43)};
+                       case "Insert": return {ctor: "_Tuple2",_0: Insert,_1: A5(balance,_p40,_p41,_p44,newLeft,_p43)};
+                       default: return {ctor: "_Tuple2",_0: Remove,_1: A5(bubble,_p40,_p41,_p44,newLeft,_p43)};}
+                  default: var _p38 = up(_p43);
+                    var flag = _p38._0;
+                    var newRight = _p38._1;
+                    var _p39 = flag;
+                    switch (_p39.ctor)
+                    {case "Same": return {ctor: "_Tuple2",_0: Same,_1: A5(RBNode_elm_builtin,_p40,_p41,_p44,_p42,newRight)};
+                       case "Insert": return {ctor: "_Tuple2",_0: Insert,_1: A5(balance,_p40,_p41,_p44,_p42,newRight)};
+                       default: return {ctor: "_Tuple2",_0: Remove,_1: A5(bubble,_p40,_p41,_p44,_p42,newRight)};}}
+            }
+      };
+      var _p45 = up(dict);
+      var flag = _p45._0;
+      var updatedDict = _p45._1;
+      var _p46 = flag;
+      switch (_p46.ctor)
+      {case "Same": return updatedDict;
+         case "Insert": return ensureBlackRoot(updatedDict);
+         default: return blacken(updatedDict);}
+   });
+   var insert = F3(function (key,value,dict) {    return A3(update,key,$Basics.always($Maybe.Just(value)),dict);});
+   var singleton = F2(function (key,value) {    return A3(insert,key,value,empty);});
+   var union = F2(function (t1,t2) {    return A3(foldl,insert,t2,t1);});
+   var fromList = function (assocs) {
+      return A3($List.foldl,F2(function (_p47,dict) {    var _p48 = _p47;return A3(insert,_p48._0,_p48._1,dict);}),empty,assocs);
+   };
+   var filter = F2(function (predicate,dictionary) {
+      var add = F3(function (key,value,dict) {    return A2(predicate,key,value) ? A3(insert,key,value,dict) : dict;});
+      return A3(foldl,add,empty,dictionary);
+   });
+   var intersect = F2(function (t1,t2) {    return A2(filter,F2(function (k,_p49) {    return A2(member,k,t2);}),t1);});
+   var partition = F2(function (predicate,dict) {
+      var add = F3(function (key,value,_p50) {
+         var _p51 = _p50;
+         var _p53 = _p51._1;
+         var _p52 = _p51._0;
+         return A2(predicate,key,value) ? {ctor: "_Tuple2",_0: A3(insert,key,value,_p52),_1: _p53} : {ctor: "_Tuple2",_0: _p52,_1: A3(insert,key,value,_p53)};
+      });
+      return A3(foldl,add,{ctor: "_Tuple2",_0: empty,_1: empty},dict);
+   });
+   var remove = F2(function (key,dict) {    return A3(update,key,$Basics.always($Maybe.Nothing),dict);});
+   var diff = F2(function (t1,t2) {    return A3(foldl,F3(function (k,v,t) {    return A2(remove,k,t);}),t1,t2);});
+   return _elm.Dict.values = {_op: _op
+                             ,empty: empty
+                             ,singleton: singleton
+                             ,insert: insert
+                             ,update: update
+                             ,isEmpty: isEmpty
+                             ,get: get
+                             ,remove: remove
+                             ,member: member
+                             ,size: size
+                             ,filter: filter
+                             ,partition: partition
+                             ,foldl: foldl
+                             ,foldr: foldr
+                             ,map: map
+                             ,union: union
+                             ,intersect: intersect
+                             ,diff: diff
+                             ,keys: keys
+                             ,values: values
+                             ,toList: toList
+                             ,fromList: fromList};
+};
+Elm.Set = Elm.Set || {};
+Elm.Set.make = function (_elm) {
+   "use strict";
+   _elm.Set = _elm.Set || {};
+   if (_elm.Set.values) return _elm.Set.values;
+   var _U = Elm.Native.Utils.make(_elm),$Basics = Elm.Basics.make(_elm),$Dict = Elm.Dict.make(_elm),$List = Elm.List.make(_elm);
+   var _op = {};
+   var foldr = F3(function (f,b,_p0) {    var _p1 = _p0;return A3($Dict.foldr,F3(function (k,_p2,b) {    return A2(f,k,b);}),b,_p1._0);});
+   var foldl = F3(function (f,b,_p3) {    var _p4 = _p3;return A3($Dict.foldl,F3(function (k,_p5,b) {    return A2(f,k,b);}),b,_p4._0);});
+   var toList = function (_p6) {    var _p7 = _p6;return $Dict.keys(_p7._0);};
+   var size = function (_p8) {    var _p9 = _p8;return $Dict.size(_p9._0);};
+   var member = F2(function (k,_p10) {    var _p11 = _p10;return A2($Dict.member,k,_p11._0);});
+   var isEmpty = function (_p12) {    var _p13 = _p12;return $Dict.isEmpty(_p13._0);};
+   var Set_elm_builtin = function (a) {    return {ctor: "Set_elm_builtin",_0: a};};
+   var empty = Set_elm_builtin($Dict.empty);
+   var singleton = function (k) {    return Set_elm_builtin(A2($Dict.singleton,k,{ctor: "_Tuple0"}));};
+   var insert = F2(function (k,_p14) {    var _p15 = _p14;return Set_elm_builtin(A3($Dict.insert,k,{ctor: "_Tuple0"},_p15._0));});
+   var fromList = function (xs) {    return A3($List.foldl,insert,empty,xs);};
+   var map = F2(function (f,s) {    return fromList(A2($List.map,f,toList(s)));});
+   var remove = F2(function (k,_p16) {    var _p17 = _p16;return Set_elm_builtin(A2($Dict.remove,k,_p17._0));});
+   var union = F2(function (_p19,_p18) {    var _p20 = _p19;var _p21 = _p18;return Set_elm_builtin(A2($Dict.union,_p20._0,_p21._0));});
+   var intersect = F2(function (_p23,_p22) {    var _p24 = _p23;var _p25 = _p22;return Set_elm_builtin(A2($Dict.intersect,_p24._0,_p25._0));});
+   var diff = F2(function (_p27,_p26) {    var _p28 = _p27;var _p29 = _p26;return Set_elm_builtin(A2($Dict.diff,_p28._0,_p29._0));});
+   var filter = F2(function (p,_p30) {    var _p31 = _p30;return Set_elm_builtin(A2($Dict.filter,F2(function (k,_p32) {    return p(k);}),_p31._0));});
+   var partition = F2(function (p,_p33) {
+      var _p34 = _p33;
+      var _p35 = A2($Dict.partition,F2(function (k,_p36) {    return p(k);}),_p34._0);
+      var p1 = _p35._0;
+      var p2 = _p35._1;
+      return {ctor: "_Tuple2",_0: Set_elm_builtin(p1),_1: Set_elm_builtin(p2)};
+   });
+   return _elm.Set.values = {_op: _op
+                            ,empty: empty
+                            ,singleton: singleton
+                            ,insert: insert
+                            ,remove: remove
+                            ,isEmpty: isEmpty
+                            ,member: member
+                            ,size: size
+                            ,foldl: foldl
+                            ,foldr: foldr
+                            ,map: map
+                            ,filter: filter
+                            ,partition: partition
+                            ,union: union
+                            ,intersect: intersect
+                            ,diff: diff
+                            ,toList: toList
+                            ,fromList: fromList};
+};
+Elm.Native.Keyboard = {};
+
+Elm.Native.Keyboard.make = function(localRuntime) {
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.Keyboard = localRuntime.Native.Keyboard || {};
+	if (localRuntime.Native.Keyboard.values)
+	{
+		return localRuntime.Native.Keyboard.values;
+	}
+
+	var NS = Elm.Native.Signal.make(localRuntime);
+
+
+	function keyEvent(event)
+	{
+		return {
+			alt: event.altKey,
+			meta: event.metaKey,
+			keyCode: event.keyCode
+		};
+	}
+
+
+	function keyStream(node, eventName, handler)
+	{
+		var stream = NS.input(eventName, { alt: false, meta: false, keyCode: 0 });
+
+		localRuntime.addListener([stream.id], node, eventName, function(e) {
+			localRuntime.notify(stream.id, handler(e));
+		});
+
+		return stream;
+	}
+
+	var downs = keyStream(document, 'keydown', keyEvent);
+	var ups = keyStream(document, 'keyup', keyEvent);
+	var presses = keyStream(document, 'keypress', keyEvent);
+	var blurs = keyStream(window, 'blur', function() { return null; });
+
+
+	return localRuntime.Native.Keyboard.values = {
+		downs: downs,
+		ups: ups,
+		blurs: blurs,
+		presses: presses
+	};
+};
+
+Elm.Keyboard = Elm.Keyboard || {};
+Elm.Keyboard.make = function (_elm) {
+   "use strict";
+   _elm.Keyboard = _elm.Keyboard || {};
+   if (_elm.Keyboard.values) return _elm.Keyboard.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Char = Elm.Char.make(_elm),
+   $Native$Keyboard = Elm.Native.Keyboard.make(_elm),
+   $Set = Elm.Set.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var presses = A2($Signal.map,function (_) {    return _.keyCode;},$Native$Keyboard.presses);
+   var toXY = F2(function (_p0,keyCodes) {
+      var _p1 = _p0;
+      var is = function (keyCode) {    return A2($Set.member,keyCode,keyCodes) ? 1 : 0;};
+      return {x: is(_p1.right) - is(_p1.left),y: is(_p1.up) - is(_p1.down)};
+   });
+   var Directions = F4(function (a,b,c,d) {    return {up: a,down: b,left: c,right: d};});
+   var dropMap = F2(function (f,signal) {    return $Signal.dropRepeats(A2($Signal.map,f,signal));});
+   var EventInfo = F3(function (a,b,c) {    return {alt: a,meta: b,keyCode: c};});
+   var Blur = {ctor: "Blur"};
+   var Down = function (a) {    return {ctor: "Down",_0: a};};
+   var Up = function (a) {    return {ctor: "Up",_0: a};};
+   var rawEvents = $Signal.mergeMany(_U.list([A2($Signal.map,Up,$Native$Keyboard.ups)
+                                             ,A2($Signal.map,Down,$Native$Keyboard.downs)
+                                             ,A2($Signal.map,$Basics.always(Blur),$Native$Keyboard.blurs)]));
+   var empty = {alt: false,meta: false,keyCodes: $Set.empty};
+   var update = F2(function (event,model) {
+      var _p2 = event;
+      switch (_p2.ctor)
+      {case "Down": var _p3 = _p2._0;
+           return {alt: _p3.alt,meta: _p3.meta,keyCodes: A2($Set.insert,_p3.keyCode,model.keyCodes)};
+         case "Up": var _p4 = _p2._0;
+           return {alt: _p4.alt,meta: _p4.meta,keyCodes: A2($Set.remove,_p4.keyCode,model.keyCodes)};
+         default: return empty;}
+   });
+   var model = A3($Signal.foldp,update,empty,rawEvents);
+   var alt = A2(dropMap,function (_) {    return _.alt;},model);
+   var meta = A2(dropMap,function (_) {    return _.meta;},model);
+   var keysDown = A2(dropMap,function (_) {    return _.keyCodes;},model);
+   var arrows = A2(dropMap,toXY({up: 38,down: 40,left: 37,right: 39}),keysDown);
+   var wasd = A2(dropMap,toXY({up: 87,down: 83,left: 65,right: 68}),keysDown);
+   var isDown = function (keyCode) {    return A2(dropMap,$Set.member(keyCode),keysDown);};
+   var ctrl = isDown(17);
+   var shift = isDown(16);
+   var space = isDown(32);
+   var enter = isDown(13);
+   var Model = F3(function (a,b,c) {    return {alt: a,meta: b,keyCodes: c};});
+   return _elm.Keyboard.values = {_op: _op
+                                 ,arrows: arrows
+                                 ,wasd: wasd
+                                 ,enter: enter
+                                 ,space: space
+                                 ,ctrl: ctrl
+                                 ,shift: shift
+                                 ,alt: alt
+                                 ,meta: meta
+                                 ,isDown: isDown
+                                 ,keysDown: keysDown
+                                 ,presses: presses};
+};
 Elm.DigitSummer = Elm.DigitSummer || {};
 Elm.DigitSummer.make = function (_elm) {
    "use strict";
@@ -5428,6 +6637,7 @@ Elm.DigitSummer.make = function (_elm) {
    if (_elm.DigitSummer.values) return _elm.DigitSummer.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Char = Elm.Char.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
    $List = Elm.List.make(_elm),
@@ -5448,12 +6658,13 @@ Elm.Main.make = function (_elm) {
    $Debug = Elm.Debug.make(_elm),
    $DigitSummer = Elm.DigitSummer.make(_elm),
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $Keyboard = Elm.Keyboard.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var initialModel = 0;
-   var main = $DigitSummer.view(initialModel);
-   return _elm.Main.values = {_op: _op,initialModel: initialModel,main: main};
+   var state = A3($Signal.foldp,F2(function (keyCode,_p0) {    return keyCode;}),0,$Keyboard.presses);
+   var main = A2($Signal.map,$DigitSummer.view,state);
+   return _elm.Main.values = {_op: _op,state: state,main: main};
 };

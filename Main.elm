@@ -1,9 +1,11 @@
 import DigitSummer
 import Graphics.Element exposing (Element)
+import Keyboard exposing (presses)
 
-initialModel : DigitSummer.Model
-initialModel = 0
+state : Signal DigitSummer.Model
+state =
+  Signal.foldp (\ keyCode _ -> keyCode) 0 presses
 
-main : Element
+main : Signal Element
 main =
-  DigitSummer.view initialModel 
+ Signal.map DigitSummer.view state
