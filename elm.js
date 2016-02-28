@@ -6637,7 +6637,6 @@ Elm.DigitSummer.make = function (_elm) {
    if (_elm.DigitSummer.values) return _elm.DigitSummer.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
-   $Char = Elm.Char.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
    $List = Elm.List.make(_elm),
@@ -6645,11 +6644,11 @@ Elm.DigitSummer.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var update = F2(function (action,model) {    var _p0 = action;if (_p0.ctor === "KeyPress") {    return _p0._0;} else {    return model;}});
-   var KeyPress = function (a) {    return {ctor: "KeyPress",_0: a};};
+   var update = F2(function (action,model) {    var _p0 = action;if (_p0.ctor === "DigitPressed") {    return model + _p0._0;} else {    return model;}});
+   var DigitPressed = function (a) {    return {ctor: "DigitPressed",_0: a};};
    var NoOp = {ctor: "NoOp"};
    var view = function (model) {    return $Graphics$Element.show(model);};
-   return _elm.DigitSummer.values = {_op: _op,view: view,update: update,NoOp: NoOp,KeyPress: KeyPress};
+   return _elm.DigitSummer.values = {_op: _op,view: view,update: update,NoOp: NoOp,DigitPressed: DigitPressed};
 };
 Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
@@ -6658,6 +6657,7 @@ Elm.Main.make = function (_elm) {
    if (_elm.Main.values) return _elm.Main.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Char = Elm.Char.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $DigitSummer = Elm.DigitSummer.make(_elm),
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
@@ -6665,9 +6665,17 @@ Elm.Main.make = function (_elm) {
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm);
    var _op = {};
-   var actions = A2($Signal.map,function (keyPress) {    return $DigitSummer.KeyPress(keyPress);},$Keyboard.presses);
+   var actions = function () {
+      var keyPressToAction = function (keyPress) {
+         return $Char.isDigit($Char.fromCode(keyPress)) ? $DigitSummer.DigitPressed(A2($Maybe.withDefault,
+         0,
+         $Result.toMaybe($String.toInt($String.fromChar($Char.fromCode(keyPress)))))) : $DigitSummer.NoOp;
+      };
+      return A2($Signal.map,keyPressToAction,$Keyboard.presses);
+   }();
    var state = A3($Signal.foldp,$DigitSummer.update,0,actions);
    var main = A2($Signal.map,$DigitSummer.view,state);
    return _elm.Main.values = {_op: _op,state: state,actions: actions,main: main};
