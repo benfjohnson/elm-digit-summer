@@ -3,6 +3,7 @@ import Graphics.Element exposing (Element)
 import Keyboard exposing (presses)
 import Char exposing (fromCode, isDigit)
 import String exposing (toInt, fromChar)
+import Html exposing (..)
 
 -- signals and inputs
 state : Signal DigitSummer.Model
@@ -23,6 +24,6 @@ actions =
     Signal.map keyPressToAction presses
   
 
-main : Signal Element
+main : Signal Html
 main =
   Signal.map DigitSummer.view state
