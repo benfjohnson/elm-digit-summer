@@ -1,6 +1,7 @@
-module DigitSummer (Model, view, update, Action(NoOp, DigitPressed)) where
+module DigitSummer (Model, view, update, Action(..)) where
 
 import Html exposing (..)
+import Html.Events exposing (onClick)
 import Keyboard exposing (presses)
 import Char exposing (KeyCode)
 
@@ -10,11 +11,13 @@ type alias Model = Int
 
 -- view
 
-view : Model -> Html
-view model =
+view : Signal.Address Action -> Model -> Html
+view address model =
   div [] [
      div [] [text "Elm Digit Summer"]
     ,span [] [text (toString model)]
+    ,br [] []
+    ,button [onClick address Reset] [text "Reset"]
   ]  
 
 -- update

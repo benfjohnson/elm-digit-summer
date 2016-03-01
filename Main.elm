@@ -1,5 +1,4 @@
 import DigitSummer
-import Graphics.Element exposing (Element)
 import Keyboard exposing (presses)
 import Char exposing (fromCode, isDigit)
 import String exposing (toInt, fromChar)
@@ -8,7 +7,10 @@ import Html exposing (..)
 -- signals and inputs
 state : Signal DigitSummer.Model
 state =
-  Signal.foldp DigitSummer.update 0 actions
+  Signal.foldp DigitSummer.update 0 (Signal.merge inbox.signal actions)
+
+inbox : Signal.Mailbox DigitSummer.Action
+inbox = Signal.mailbox DigitSummer.NoOp
 
 {-- signal of actions, filters out keypresses that weren't digits --}
 actions : Signal DigitSummer.Action
@@ -26,4 +28,4 @@ actions =
 
 main : Signal Html
 main =
-  Signal.map DigitSummer.view state
+  Signal.map (DigitSummer.view inbox.address) state
